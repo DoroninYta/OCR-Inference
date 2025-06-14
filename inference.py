@@ -21,11 +21,12 @@ import timm
 class NumberPlateOCR:
     def __init__(self, path_to_video: Path, path_car_detector: Path = "models/yolov8m.pt", path_plate_detector: Path = "models/license_plate_detector.pt",
                 path_ocr: Path = "/home/user/3_numbers/paddle_ocr/output/rec/rec_svtr_small_stn_en/300k_with_char_norm_val/infer_0.99_infer/"):
+        self.device = "cuda" if torch.cuda.is_available else "cpu"
         self.model_car_detector = YOLO(path_car_detector)
         self.model_plate_detector = YOLO(path_plate_detector)
         self.cap = cv.VideoCapture(path_to_video)
         self.model_ocr = self.init_ocr(path_ocr)
-        self.model_classifier = timm.create_model(model_name="convnext_pico.d1_in1k", num_classes=2, checkpoint_path="models/model_best.pth.tar")
+        self.model_classifier = timm.create_model(model_name="convnext_pico.d1_in1k", num_classes=2, checkpoint_path="models/model_best.pth.tar").to(self.device)
         self.dict_results = defaultdict(lambda: {"car_images": [], "plate_images" : [], "plate_rec": None}) #{track_id : {images : [], plate_rec : str}}
 
 
@@ -63,7 +64,9 @@ class NumberPlateOCR:
                     cv.waitKey(0)
                     
     def check_image(self, image):
-        img = np.expand_dims(image, axis=0)
+        # img = torch.Tensor(image).unsqueeze(0).to(self.device)
+        cv.imwrite("test.jpg", image)
+        img = image
         print(img.shape)
         res = self.model_classifier(img).softmax(axis=1)
         print("classifier res", res)
@@ -78,17 +81,13 @@ class NumberPlateOCR:
         return None, None
     def init_ocr(self, path_to_model):
         args = utility.parse_args()
-        args.use_tensorrt = False
+        args.use_tensorrt = True
         # args.rec_model_dir = "/home/user/3_numbers/paddle_ocr/output/rec/rec_svtr_small_stn_en/300k_with_char_norm_val/infer_0.99_infer/"
         args.rec_model_dir = path_to_model
         args.image_dir = "/home/user/3_numbers/ocr_training_prepairing/data/clear_data/images_clear_DONE"
         args.benchmark = False
         return infer.TextRecognizer(args)
     
-    def create_classifier(self, path_to_classifier):
-        #!TODO
-        pass
-
     def predict(self, image):
         car_detect_result = self.model_car_detector.track(image, stream=False, save=False, imgsz=1280, classes=2, show=False)
         return car_detect_result
