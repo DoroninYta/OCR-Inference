@@ -79,6 +79,7 @@ class NumberPlateOCR:
             crop_image = image[int(res.xyxy[0][1]):int(res.xyxy[0][3]), int(res.xyxy[0][0]):int(res.xyxy[0][2])]
             return crop_image, [(int(res.xyxy[0][0]), int(res.xyxy[0][1])), (int(res.xyxy[0][2]), int(res.xyxy[0][3]))]
         return None, None
+    
     def init_ocr(self, path_to_model):
         args = utility.parse_args()
         args.use_tensorrt = True
