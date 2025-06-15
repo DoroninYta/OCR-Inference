@@ -8,7 +8,8 @@ import sys
 import re
 from collections import defaultdict
 import timm
-
+# change place drawing images and make fraw images without bboxes rectangles 
+# drawing text in the bottom in a string 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if root not in sys.path:
     sys.path.append(root)
@@ -33,7 +34,7 @@ class NumberPlateOCR:
         
         # Увеличим высоту верхней области для лучшего отображения
         self.top_border_height = 150
-        self.bottom_border_height = 80
+        self.bottom_border_height = 150
         
         # Словарь для хранения результатов
         self.track_data = defaultdict(lambda: {
@@ -46,10 +47,10 @@ class NumberPlateOCR:
         })
         
         # Параметры фильтров
-        self.min_car_area = 50000       # Минимальная площадь автомобиля для обработки
+        self.min_car_area = 70000       # Минимальная площадь автомобиля для обработки
         self.min_plate_area = 1000      # Минимальная площадь номера для распознавания
         self.min_plate_ratio = 2.0      # Минимальное соотношение сторон номера (ширина/высота)
-        self.confirmation_threshold = 5 # Количество успешных распознаваний для подтверждения
+        self.confirmation_threshold = 25 # Количество успешных распознаваний для подтверждения
         self.max_history = 20           # Максимальное количество хранимых распознаваний
         
         # Фиксированные позиции для отображения
